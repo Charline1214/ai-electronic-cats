@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ai电子猫咪</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+        *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+        :root{--green:#4ade80;--pink:#f472b6;--blue:#60a5fa;--yellow:#fbbf24;--orange:#fb923c;--purple:#a78bfa;--red:#ef4444}
+        body{font-family:'Press Start 2P','Microsoft YaHei',monospace;background:linear-gradient(135deg,#1a1a2e,#16213e 50%,#0f3460);min-height:100vh;overflow-x:hidden;color:#fff}
+        .app{max-width:480px;margin:0 auto;min-height:100vh;padding:8px;position:relative;font-family:'Press Start 2P','Microsoft YaHei',monospace}
+        .title{text-align:center;padding:15px 0;font-size:16px;color:var(--green);text-shadow:2px 2px 0 #1a1a1a;font-family:'Press Start 2P','Microsoft YaHei',monospace}
+        .pbox{background:#3d3d3d;border:4px solid #1a1a1a;box-shadow:0 0 0 2px #666,4px 4px 0 #1a1a1a,inset 0 0 15px rgba(0,0,0,.3);font-family:'Press Start 2P','Microsoft YaHei',monospace}
+        .pbtn{background:linear-gradient(180deg,#5a5a5a,#3d3d3d);border:3px solid #1a1a1a;color:#fff;padding:10px 16px;font-family:'Press Start 2P','Microsoft YaHei',monospace;font-size:11px;cursor:pointer;box-shadow:0 4px 0 #1a1a1a;transition:.1s}
+        .pbtn:active{transform:translateY(4px);box-shadow:none}
+        .pbtn.g{background:linear-gradient(180deg,var(--green),#22c55e);color:#1a1a1a}
+        .pbtn.p{background:linear-gradient(180deg,var(--pink),#ec4899);color:#1a1a1a}
+        .pbtn.r{background:linear-gradient(180deg,var(--red),#dc2626)}
+        .pbtn.pu{background:linear-gradient(180deg,var(--purple),#8b5cf6)}
+        .pbtn.b{background:linear-gradient(180deg,var(--blue),#3b82f6)}
+        .pbtn:disabled{opacity:.4;pointer-events:none}
+        .scr{display:none;animation:fi .3s}.scr.on{display:block}
+        @keyframes fi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+        /* 品种选择 */
+        .bsel{padding:15px;font-family:'Press Start 2P','Microsoft YaHei',monospace}
+        .bgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:15px 0}
+        .bitem{display:flex;flex-direction:column;align-items:center;cursor:pointer;transition:.2s}
+        .bitem:active{transform:scale(.95)}
+        .bicon{width:65px;height:65px;border-radius:50%;border:3px solid #666;overflow:hidden;background:#2d2d2d;box-shadow:0 3px 0 #1a1a1a}
+        .bitem.sel .bicon{border-color:var(--green);box-shadow:0 0 12px var(--green),0 3px 0 #1a1a1a}
+        .bicon svg{width:100%;height:100%}
+        .bname{margin-top:5px;font-size:8px;color:#ccc;text-align:center;font-family:'Press Start 2P','Microsoft YaHei',monospace}
+        .bitem.sel .bname{color:var(--green)}
+        /* 性别选择 */
+        .gsel{padding:30px 20px;text-align:center;font-family:'Press Start 2P','Microsoft YaHei',monospace}
+        .gender-opts{display:flex;gap:20px;justify-content:center;margin:25px 0}
+        .gopt{width:120px;padding:20px 15px;background:#2d2d2d;border:4px solid #666;border-radius:15px;cursor:pointer;transition:.2s;text-align:center;font-family:'Press Start 2P','Microsoft YaHei',monospace}
+        .gopt:active{transform:scale(.95)}
+        .gopt.sel-m{border-color:var(--blue);box-shadow:0 0 15px var(--blue)}
+        .gopt.sel-f{border-color:var(--pink);box-shadow:0 0 15px var(--pink)}
+        .gopt-icon{font-size:40px;margin-bottom:10px}
+        .gopt-label{font-size:12px;font-family:'Press Start 2P','Microsoft YaHei',monospace}
+        .gopt-sub{font-size:8px;color:#aaa;margin-top:5px;font-family:'Press Start 2P','Microsoft YaHei',monospace}
+        /* 命名 */
+        .nsel{padding:25px 20px;text-align:center;font-family:'Press Start 2P','Microsoft YaHei',monospace}
+        .cprev{width:120px;height:120px;margin:15px auto;border-radius:15px;background:#2d2d2d;border:3px solid #666;display:flex;align-items:center;justify-content:center}
+        .cprev svg{width:100px;height:100px}
+        .pinput{background:#1a1a1a;border:3px solid #666;color:#fff;padding:12px;font-family:'Press Start 2P','Microsoft YaHei',monospace;font-size:13px;width:100%;max-width:260px;text-align:center;outline:none}
+        .pinput:focus{border-color:var(--green)}
+        /* 主游戏 */
+        .gscreen{padding:8px;font-family:'Press Start 2P','Microsoft YaHei',monospace}
+        .sbar{display:flex;justify-content:space-between;padding:8px;background:#2d2d2d;border:3px solid #1a1a1a;margin-bottom:8px;box-shadow:0 3px 0 #1a1a1a;font-family:'Press Start 2P','Microsoft YaHei',monospace}
+        .sitem{display:flex;align-items:center;gap:4px;font-size:8px;font-family:'Press Start 2P','Microsoft YaHei',monospace}
+        .sfill{width:50px;height:10px;background:#1a1a1a;border:2px solid #666;overflow:hidden}
+        .sinner{height:100%;transition:width .3s}
+        .hbar{background:linear-gradient(90deg,#ef4444,#f97316)}
+        .hapbar{background:linear-gradient(90deg,#fbbf24,#f59e0b)}
+        .cbar{background:linear-gradient(90deg,#60a5fa,#3b82f6)}
+        .sel-info{text-align:center;padding:6px;background:#2d2d2d;border:3px solid #1a1a1a;margin-bottom:8px;font-size:10px;color:var(--yellow);display:flex;justify-content:center;align-items:center;gap:8px;font-family:'Press Start 2P','Microsoft YaHei',monospace}
+        .gender-tag{font-size:10px;padding:2px 6px;border-radius:8px;font-family:'Press Start 2P','Microsoft YaHei',monospace;cursor:pointer;transition:transform .2s}
+        .gender-tag:hover{transform:scale(1.1)}
+        .gender-m{background:var(--blue);color:#fff}
+        .gender-f{background:var(--pink);color:#fff}
+        /* 多猫显示 */
+        .cats-row{display:flex;gap:8px;justify-content:center;margin-bottom:8px}
+        .ccard{flex:1;max-width:220px;background:linear-gradient(180deg,#4a5568,#2d3748);border:3px solid #1a1a1a;border-radius:10px;padding:8px;cursor:pointer;transition:.2s;position:relative;min-height:200px;font-family:'Press Start 2P','Microsoft YaHei',monospace}
+        .ccard.sel{border-color:var(--green);box-shadow:0 0 12px rgba(74,222,128,.4)}
+        .ccard-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;font-size:9px;font-family:'Press Start 2P','Microsoft YaHei',monospace}
+        .ccard-name{color:var(--yellow);text-shadow:1px 1px 0 #1a1a1a;font-family:'Press Start 2P','Microsoft YaHei',monospace}
+        .ccard-age{color:#ccc;font-size:8px;font-family:'Press Start 2P','Microsoft YaHei',monospace}
+        .ccard-avatar{width:100%;display:flex;justify-content:center}
+        .ccard-avatar svg{width:110px;height:110px}
+        .ccard-needs{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;margin-top:5px;font-family:'Press Start 2P','Microsoft YaHei',monospace}
+        .ccard .sick-tag{position:absolute;top:5px;left:5px;background:var(--purple);color:#fff;padding:2px 6px;border-radius:6px;font-size:7px;font-family:'Press Start 2P','Microsoft YaHei',monospace}
+        .ccard .sleep-tag{position:absolute;top:5px;right:5px;background:#1a1a1a;color:var(--yellow);padding:2px 6px;border-radius:6px;font-size:7px;font-family:'Press Start 2P','Microsoft YaHei',monospace}
+        .ccard .zzz{position:absolute;top:15px;right:10px;font-size:14px;animation:zf 2s infinite;font-family:'Press Start 2P','Microsoft YaHei',monospace}
+        @keyframes zf{0%,100%{opacity:.5;transform:translateY(0)}50%{opacity:1;transform:translateY(-8px)}}
+        .ccard .waste{position:absolute;bottom:5px;left:5px;display:flex;gap:4px;font-family:'Press Start 2P','Microsoft YaHei',monospace}
+        .ccard .waste span{font-size:14px;font-family:'Press Start 2P','Microsoft YaHei',monospace}
+        /* 小猫 */
+        .baby-row{display:flex;justify-content:center;margin-bottom:8px;font-family:'Press Start 2P','Microsoft YaHei',monospace}
+        .baby-card{background:linear-gradient(180deg,#fce7f3,#fbcfe8);border:3px solid #1a1a1a;border-radius:10px;padding:8px 15px;display:flex;align-items:center;gap:8px;font-family:'Press Start 2P','Microsoft YaHei',monospace}
+        .baby-card svg{width:50px;height:50px}
+        .baby-info{font-size:8px;color:#1a1a1a;font-family:'Press Start 2P','Microsoft YaHei',monospace}
+        .baby-info .bname{font-size:9px;font-weight:bold;font-family:'Press Start 2P','Microsoft YaHei',monospace}
+        /* 气泡 */
+        .bubble{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;color:#1a1a1a;padding:10px 15px;border-radius:12px;font-size:9px;max-width:250px;text-align:center;box-shadow:3px 3px 0 #1a1a1a;animation:pi .3s;z-index:50;pointer-events:none;font-family:'Press Start 2P','Microsoft YaHei',monospace}
+        @keyframes pi{from{opacity:0;transform:translate(-50%,-50%) scale(.5)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+        .badge{padding:3px 6px;border-radius:8px;font-size:7px;animation:pu 1s infinite;font-family:'Press Start 2P','Microsoft YaHei',monospace}
+        @keyframes pu{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+        .badge-h{background:var(--red);color:#fff}
+        .badge-s{background:var(--purple);color:#fff}
+        .badge-o{background:#6b7280;color:#fff}
+        /* 操作按钮 */
+        .agrid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:8px;font-family:'Press Start 2P','Microsoft YaHei',monospace}
+        .abtn{display:flex;flex-direction:column;align-items:center;padding:8px 4px;background:linear-gradient(180deg,#4a5568,#2d3748);border:3px solid #1a1a1a;border-radius:8px;cursor:pointer;box-shadow:0 3px 0 #1a1a1a;font-family:'Press Start 2P','Microsoft YaHei',monospace}
+        .abtn:active{transform:translateY(3px);box-shadow:none}
+        .abtn:disabled{opacity:.3;pointer-events:none}
+        .abtn .ai{width:30px;height:30px;margin-bottom:2px}
+        .abtn .al{font-size:7px;color:#ccc;font-family:'Press Start 2P','Microsoft YaHei',monospace}
+        /* 弹窗 */
+        .modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;z-index:100;padding:15px;font-family:'Press Start 2P','Microsoft YaHei',monospace}
+        .modal.on{display:flex}
+        .mcontent{background:#3d3d3d;border:4px solid #1a1a1a;border-radius:15px;padding:18px;max-width:340px;width:100%;text-align:center;font-family:'Press Start 2P','Microsoft YaHei',monospace}
+        .mtitle{font-size:13px;margin-bottom:15px;color:var(--yellow);font-family:'Press Start 2P','Microsoft YaHei',monospace}
+        .food-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px}
+        .fitem{display:flex;flex-direction:column;align-items:center;cursor:pointer;padding:6px 3px;background:#2d2d2d;border:3px solid #666;border-radius:8px;transition:.2s;font-family:'Press Start 2P','Microsoft YaHei',monospace}
+        .fitem:active{transform:scale(.95);border-color:var(--green)}
+        .fitem svg{width:40px;height:40px;margin-bottom:3px}
+        .fitem span{font-size:7px;font-family:'Press Start 2P','Microsoft YaHei',monospace}
+        .fmsg{font-size:8px;color:var(--pink);margin-bottom:10px;min-height:20px;padding:4px;background:rgba(0,0,0,.3);border-radius:6px;font-family:'Press Start 2P','Microsoft YaHei',monospace}
+        /* 结婚弹窗 */
+        .marry-cats{display:flex;justify-content:center;gap:15px;margin:15px 0;font-family:'Press Start 2P','Microsoft YaHei',monospace}
+        .marry-cat{text-align:center;font-family:'Press Start 2P','Microsoft YaHei',monospace}
+        .marry-cat svg{width:60px;height:60px}
+        .marry-cat .mcname{font-size:9px;margin-top:5px;color:var(--yellow);font-family:'Press Start 2P','Microsoft YaHei',monospace}
+        .marry-heart{font-size:30px;align-self:center;animation:hb 1s infinite;font-family:'Press Start 2P','Microsoft YaHei',monospace}
+        @keyframes hb{0%,100%{transform:scale(1)}50%{transform:scale(1.2)}}
+        /* 小猫弹窗 */
+        .baby-preview{margin:15px auto;width:100px;height:100px;background:#fce7f3;border-radius:50%;display:flex;align-items:center;justify-content:center;border:3px solid #f9a8d4;font-family:'Press Start 2P','Microsoft YaHei',monospace}
+        .baby-preview svg{width:70px;height:70px}
+        .baby-btns{display:flex;gap:10px;justify-content:center;margin-top:15px}
+        /* 聊天 */
+        .chatbox{display:flex;flex-direction:column;height:70vh;font-family:'Press Start 2P','Microsoft YaHei',monospace}
+        .chatbox.on{display:flex}
+        .chathead{display:flex;align-items:center;justify-content:space-between;padding:8px;background:#2d2d2d;border-bottom:3px solid #1a1a1a;font-family:'Press Start 2P','Microsoft YaHei',monospace}
+        .chathead span{font-size:10px;color:var(--yellow);font-family:'Press Start 2P','Microsoft YaHei',monospace}
+        .chatmsgs{flex:1;overflow-y:auto;padding:10px;background:#1a1a1a;display:flex;flex-direction:column;gap:6px;font-family:'Press Start 2P','Microsoft YaHei',monospace}
+        .cmsg{max-width:80%;padding:7px 10px;border-radius:10px;font-size:9px;line-height:1.4;word-wrap:break-word;font-family:'Press Start 2P','Microsoft YaHei',monospace}
+        .cmsg.u{align-self:flex-end;background:var(--blue);color:#fff;border-bottom-right-radius:3px}
+        .cmsg.c{align-self:flex-start;background:#4a5568;color:#fff;border-bottom-left-radius:3px}
+        .chatin{display:flex;gap:6px;padding:8px;background:#2d2d2d;border-top:3px solid #1a1a1a;font-family:'Press Start 2P','Microsoft YaHei',monospace}
+        .chatinp{flex:1;background:#1a1a1a;border:3px solid #666;color:#fff;padding:7px;font-family:'Press Start 2P','Microsoft YaHei',monospace;font-size:9px;border-radius:6px;outline:none}
+        .chatinp:focus{border-color:var(--green)}
+        .typing{font-size:8px;color:#888;padding:3px 10px;display:none;font-family:'Press Start 2P','Microsoft YaHei',monospace}
+        .typing.on{display:block}
+        /* 通知 */
+        .notif{position:fixed;top:15px;left:50%;transform:translateX(-50%);background:var(--pink);color:#1a1a1a;padding:8px 15px;border-radius:15px;font-size:9px;box-shadow:0 3px 10px rgba(0,0,0,.3);animation:ns .3s;z-index:200;max-width:90%;text-align:center;font-family:'Press Start 2P','Microsoft YaHei',monospace}
+        @keyframes ns{from{opacity:0;transform:translateX(-50%) translateY(-10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+        /* 死亡 */
+        .death{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center;z-index:400;padding:20px;font-family:'Press Start 2P','Microsoft YaHei',monospace}
+        .death.on{display:flex}
+        .death-c{text-align:center;max-width:320px;font-family:'Press Start 2P','Microsoft YaHei',monospace}
+        .death-c h2{font-size:16px;color:var(--red);margin-bottom:15px;font-family:'Press Start 2P','Microsoft YaHei',monospace}
+        .death-c p{font-size:10px;color:#ccc;margin-bottom:20px;line-height:1.6;font-family:'Press Start 2P','Microsoft YaHei',monospace}
+        .death-c .dbtns{display:flex;flex-direction:column;gap:10px;font-family:'Press Start 2P','Microsoft YaHei',monospace}
+        .info{text-align:center;padding:10px;background:#2d2d2d;border:3px solid #1a1a1a;border-radius:8px;font-size:7px;color:#888;line-height:1.6;font-family:'Press Start 2P','Microsoft YaHei',monospace}
+        .rename-b{background:none;border:none;color:var(--blue);font-family:inherit;font-size:7px;cursor:pointer;text-decoration:underline}
+        .heart-fx{position:fixed;font-size:20px;animation:hf 1s forwards;pointer-events:none;z-index:60;font-family:'Press Start 2P','Microsoft YaHei',monospace}
+        @keyframes hf{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-40px) scale(1.3)}}
+        @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+        @keyframes wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-4deg)}75%{transform:rotate(4deg)}}
+        @keyframes sleep{0%,100%{transform:scale(1)}50%{transform:scale(1.01)}}
+        .anim-bounce svg{animation:bounce .5s infinite}
+        .anim-wiggle svg{animation:wiggle .3s infinite}
+        .anim-sleep svg{animation:sleep 2s infinite}
+    </style>
+</head>
+<body>
+<div class="app">
+    <h1 class="title">ai电子猫咪</h1>
+
+    <!-- 品种选择 -->
+    <div class="scr on" id="sBreed">
+        <div class="pbox bsel">
+            <p style="text-align:center;font-size:10px;color:#aaa;margin-bottom:10px">请选择你要领养的猫咪品种</p>
+            <div class="bgrid" id="breedGrid"></div>
+            <div style="text-align:center;margin-top:12px">
+                <button class="pbtn g" id="btnBreedOk" disabled>确认选择</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 性别选择 -->
+    <div class="scr" id="sGender">
+        <div class="pbox gsel">
+            <p style="font-size:11px;color:#aaa;margin-bottom:5px">选择猫咪的性别</p>
+            <div class="gender-opts">
+                <div class="gopt" data-g="male" id="goptM">
+                    <div class="gopt-icon">♂</div>
+                    <div class="gopt-label" style="color:var(--blue)">公猫</div>
+                    <div class="gopt-sub">帅气的小王子</div>
+                </div>
+                <div class="gopt" data-g="female" id="goptF">
+                    <div class="gopt-icon">♀</div>
+                    <div class="gopt-label" style="color:var(--pink)">母猫</div>
+                    <div class="gopt-sub">可爱的小公主</div>
+                </div>
+            </div>
+            <div style="display:flex;gap:10px;justify-content:center;margin-top:15px">
+                <button class="pbtn" id="btnGenderBack">返回</button>
+                <button class="pbtn g" id="btnGenderOk" disabled>确认</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 命名 -->
+    <div class="scr" id="sName">
+        <div class="pbox nsel">
+            <p style="font-size:10px;color:#aaa">给你的小猫咪取个名字吧</p>
+            <div class="cprev" id="namePrev"></div>
+            <div style="margin:15px 0"><input type="text" class="pinput" id="nameInput" placeholder="输入猫咪名字" maxlength="10"></div>
+            <div style="display:flex;gap:10px;justify-content:center">
+                <button class="pbtn" id="btnNameBack">返回</button>
+                <button class="pbtn g" id="btnNameOk">确认领养</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主游戏 -->
+    <div class="scr" id="sGame">
+        <div class="gscreen">
+            <div class="sbar">
+                <div class="sitem"><span>饱食</span><div class="sfill"><div class="sinner hbar" id="barH" style="width:80%"></div></div></div>
+                <div class="sitem"><span>开心</span><div class="sfill"><div class="sinner hapbar" id="barHp" style="width:70%"></div></div></div>
+                <div class="sitem"><span>清洁</span><div class="sfill"><div class="sinner cbar" id="barC" style="width:90%"></div></div></div>
+            </div>
+            <div class="sel-info" id="selInfo">--</div>
+            <div class="cats-row" id="catsRow"></div>
+            <div class="baby-row" id="babyRow"></div>
+            <div class="agrid" id="actionGrid">
+                <div class="abtn" data-act="feed"><svg class="ai" viewBox="0 0 50 50"><ellipse cx="25" cy="25" rx="20" ry="12" fill="#d4a574"/><polygon points="5,25 0,18 0,32" fill="#d4a574"/><circle cx="35" cy="22" r="3" fill="#333"/></svg><span class="al">喂食</span></div>
+                <div class="abtn" data-act="med"><svg class="ai" viewBox="0 0 50 50"><rect x="15" y="10" width="20" height="30" fill="#ef4444" rx="5"/><rect x="20" y="5" width="10" height="10" fill="#fff"/><circle cx="25" cy="25" r="5" fill="#fff"/></svg><span class="al">喂药</span></div>
+                <div class="abtn" data-act="pet"><svg class="ai" viewBox="0 0 50 50"><path d="M20 35Q15 30 20 25Q25 20 30 25" stroke="#fdba74" stroke-width="4" fill="none"/><path d="M30 25Q35 20 40 25" stroke="#fdba74" stroke-width="4" fill="none"/><path d="M25 30Q20 35 25 40L35 40Q40 35 35 30" fill="#fdba74"/><path d="M35 10Q38 5 42 10Q45 15 35 20Q25 15 28 10Q32 5 35 10" fill="#f472b6"/></svg><span class="al">摸摸</span></div>
+                <div class="abtn" data-act="comb"><svg class="ai" viewBox="0 0 50 50"><rect x="10" y="10" width="30" height="8" fill="#8b4513" rx="2"/><rect x="12" y="18" width="4" height="15" fill="#a0522d"/><rect x="19" y="18" width="4" height="15" fill="#a0522d"/><rect x="26" y="18" width="4" height="15" fill="#a0522d"/><rect x="33" y="18" width="4" height="15" fill="#a0522d"/></svg><span class="al">梳毛</span></div>
+                <div class="abtn" data-act="poop"><svg class="ai" viewBox="0 0 50 50"><ellipse cx="25" cy="35" rx="15" ry="8" fill="#8b4513"/><ellipse cx="20" cy="32" rx="5" ry="4" fill="#654321"/><rect x="35" y="10" width="4" height="25" fill="#9ca3af"/><ellipse cx="37" cy="35" rx="8" ry="6" fill="#6b7280"/></svg><span class="al">铲屎</span></div>
+                <div class="abtn" data-act="pee"><svg class="ai" viewBox="0 0 50 50"><ellipse cx="25" cy="38" rx="18" ry="6" fill="#fbbf24" opacity=".6"/><path d="M25 15Q20 25 25 30Q30 25 25 15" fill="#60a5fa"/><rect x="38" y="8" width="3" height="30" fill="#8b4513"/></svg><span class="al">清理</span></div>
+                <div class="abtn" data-act="chat" onclick="openChat()"><svg class="ai" viewBox="0 0 50 50"><ellipse cx="25" cy="22" rx="20" ry="15" fill="#60a5fa"/><polygon points="15,32 20,42 25,32" fill="#60a5fa"/><circle cx="18" cy="22" r="2" fill="#fff"/><circle cx="25" cy="22" r="2" fill="#fff"/><circle cx="32" cy="22" r="2" fill="#fff"/></svg><span class="al">聊天</span></div>
+                <div class="abtn" data-act="wake" id="btnWake"><svg class="ai" viewBox="0 0 50 50"><circle cx="25" cy="25" r="18" fill="#fbbf24"/><circle cx="18" cy="22" r="3" fill="#333"/><circle cx="32" cy="22" r="3" fill="#333"/><path d="M18 32Q25 38 32 32" stroke="#333" stroke-width="2" fill="none"/><path d="M10 10L40 40M40 10L10 40" stroke="#ef4444" stroke-width="3"/></svg><span class="al">唤醒</span></div>
+                <div class="abtn" data-act="marry" id="btnMarry" style="display:none"><svg class="ai" viewBox="0 0 50 50"><path d="M25 38Q15 30 10 20Q8 14 14 12Q20 10 25 18Q30 10 36 12Q42 14 40 20Q35 30 25 38Z" fill="#f472b6"/></svg><span class="al">结婚</span></div>
+            </div>
+            <div style="display:flex;gap:6px;margin-bottom:8px">
+                <button class="pbtn b" id="btnAddCat" style="flex:1;font-size:9px;padding:8px">再养一只</button>
+            </div>
+            <div class="info" id="infoText">每天0点猫咪长大一岁 | 正常喂养可活到20岁</div>
+        </div>
+    </div>
+
+    <!-- 聊天 -->
+    <div class="scr" id="sChat">
+        <div class="pbox chatbox on">
+            <div class="chathead">
+                <button class="pbtn" id="btnChatBack" style="padding:6px 10px;font-size:8px">返回</button>
+                <span>与 <span id="chatCatName">猫咪</span> 聊天</span>
+                <div style="display:flex;gap:4px">
+                    <button class="pbtn b" id="btnSaveChat" style="padding:6px 8px;font-size:7px">保存</button>
+                    <button class="pbtn r" id="btnClearChat" style="padding:6px 8px;font-size:7px">清空</button>
+                </div>
+            </div>
+            <div class="chatmsgs" id="chatMsgs"><div class="cmsg c">喵~ 有什么想和我说的话吗？</div></div>
+            <div class="typing" id="typingInd">猫咪正在思考中...</div>
+            <div class="chatin">
+                <input type="text" class="chatinp" id="chatInput" placeholder="输入消息...">
+                <button class="pbtn g" id="btnSend" style="padding:7px 10px;font-size:8px">发送</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 喂食弹窗 -->
+<div class="modal" id="mFeed">
+    <div class="mcontent">
+        <h3 class="mtitle">选择食物</h3>
+        <div class="fmsg" id="fmsg">选择一种食物给猫咪吧~</div>
+        <div class="food-grid" id="foodGrid"></div>
+        <button class="pbtn" id="btnFeedClose" style="width:100%">取消</button>
+    </div>
+</div>
+
+<!-- 改名弹窗 -->
+<div class="modal" id="mRename">
+    <div class="mcontent">
+        <h3 class="mtitle">给猫咪改个新名字</h3>
+        <div style="margin-bottom:12px"><input type="text" class="pinput" id="renameInput" placeholder="新名字" maxlength="10"></div>
+        <div style="display:flex;gap:10px;justify-content:center">
+            <button class="pbtn" id="btnRenameCancel">取消</button>
+            <button class="pbtn g" id="btnRenameOk">确认</button>
+        </div>
+    </div>
+</div>
+
+<!-- 结婚弹窗 -->
+<div class="modal" id="mMarry">
+    <div class="mcontent">
+        <h3 class="mtitle">让它们结婚吧！</h3>
+        <div class="marry-cats" id="marryCats"></div>
+        <p id="marryNote" style="font-size:9px;color:#ccc;margin:10px 0"></p>
+        <div style="display:flex;gap:10px;justify-content:center">
+            <button class="pbtn" id="btnMarryCancel">取消</button>
+            <button class="pbtn p" id="btnMarryOk">确认结婚</button>
+        </div>
+    </div>
+</div>
+
+<!-- 小猫弹窗 -->
+<div class="modal" id="mBaby">
+    <div class="mcontent">
+        <h3 class="mtitle">小猫咪出生了！</h3>
+        <div class="baby-preview" id="babyPrev"></div>
+        <p id="babyInfo" style="font-size:9px;color:#ccc;margin:10px 0"></p>
+        <div class="baby-btns">
+            <button class="pbtn g" id="btnKeepBaby">自养</button>
+            <button class="pbtn" id="btnGiveBaby">送人</button>
+        </div>
+    </div>
+</div>
+
+<!-- 死亡弹窗 -->
+<div class="death" id="dDeath">
+    <div class="death-c">
+        <h2 id="deathTitle">猫咪离开了</h2>
+        <p id="deathMsg">你的猫咪已经离开了...</p>
+        <div class="dbtns">
+            <button class="pbtn g" id="btnDeathNew">选择新的猫咪</button>
+            <button class="pbtn pu" id="btnDeathRebirth">重生本轮猫咪</button>
+        </div>
+    </div>
+</div>
+
+<!-- 确认弹窗 -->
+<div class="modal" id="mConfirm">
+    <div class="mcontent">
+        <h3 class="mtitle" id="confirmTitle">确认</h3>
+        <p id="confirmMsg" style="font-size:9px;color:#ccc;margin-bottom:15px"></p>
+        <div style="display:flex;gap:10px;justify-content:center">
+            <button class="pbtn" id="btnConfirmNo">取消</button>
+            <button class="pbtn r" id="btnConfirmYes">确定</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// ========== 数据定义 ==========
+const BREEDS = {
+    'american-shorthair': {name:'美国短毛猫', body:'#d4d4d4', eye:'#333'},
+    'british-shorthair': {name:'英国短毛猫', body:'#8fa8bc', eye:'#fbbf24'},
+    'ragdoll': {name:'布偶猫', body:'#faf0e6', eye:'#6b8e9f', mask:'#8b6f47'},
+    'chinchilla': {name:'金吉拉', body:'#fafad2', eye:'#90ee90'},
+    'chinese-garden': {name:'中华田园猫', body:'#ffb84d', eye:'#228b22', stripe:'#e67e00'},
+    'siamese': {name:'暹罗猫', body:'#faf0e6', eye:'#87ceeb', mask:'#4a3728'},
+    'maine-coon': {name:'缅因猫', body:'#a0522d', eye:'#228b22'},
+    'persian': {name:'波斯猫', body:'#fff', eye:'#ff6b6b'},
+    'scottish-fold': {name:'苏格兰折耳猫', body:'#e6b885', eye:'#fbbf24', folded:true},
+    'sphynx': {name:'斯芬克斯猫', body:'#fdba74', eye:'#22c55e'},
+    'russian-blue': {name:'俄罗斯蓝猫', body:'#5a6a7a', eye:'#22c55e'},
+    'norwegian-forest': {name:'挪威森林猫', body:'#d4d4d4', eye:'#22c55e'}
+};
+
+const FOODS = [
+    {id:'fish', name:'小鱼干', msg:'小鱼干真香！谢谢主人喵~', svg:'<ellipse cx="30" cy="30" rx="22" ry="13" fill="#d4a574"/><polygon points="8,30 3,23 3,37" fill="#d4a574"/><circle cx="40" cy="27" r="3" fill="#333"/>'},
+    {id:'shrimp', name:'小虾干', msg:'小虾干脆脆的，好吃喵~', svg:'<ellipse cx="35" cy="20" rx="10" ry="7" fill="#ff9999"/><rect x="30" y="25" width="10" height="7" fill="#ff8888" rx="2"/><rect x="28" y="31" width="14" height="7" fill="#ff7777" rx="2"/><circle cx="40" cy="18" r="2" fill="#333"/>'},
+    {id:'water', name:'喝水', msg:'主人也要多喝水水哟~', svg:'<path d="M20 15Q15 30 20 45L40 45Q45 30 40 15Z" fill="#60a5fa" opacity=".8"/><ellipse cx="30" cy="15" rx="10" ry="4" fill="#87ceeb"/>'},
+    {id:'catfood', name:'健康猫粮', msg:'喵也需要喵的所谓主食喵~', svg:'<ellipse cx="30" cy="38" rx="20" ry="9" fill="#8b4513"/><ellipse cx="30" cy="36" rx="18" ry="7" fill="#a0522d"/><circle cx="22" cy="34" r="5" fill="#d2691e"/><circle cx="30" cy="32" r="5" fill="#cd853f"/><circle cx="38" cy="34" r="5" fill="#d2691e"/>'},
+    {id:'grass', name:'小麦草', msg:'喵也要吃菜菜除毛毛~', svg:'<ellipse cx="30" cy="48" rx="14" ry="5" fill="#8b4513"/><path d="M20 48Q18 30 22 15" stroke="#4ade80" stroke-width="3" fill="none"/><path d="M30 48Q30 20 35 8" stroke="#22c55e" stroke-width="3" fill="none"/><path d="M40 48Q42 32 38 18" stroke="#4ade80" stroke-width="3" fill="none"/>'},
+    {id:'coffee', name:'喵咪咖啡', msg:'喵一天要睡20小时但喵就爱喝咖啡~', svg:'<path d="M15 20L18 45L42 45L45 20Z" fill="#6b4423"/><ellipse cx="30" cy="20" rx="15" ry="5" fill="#8b4513"/><ellipse cx="30" cy="22" rx="12" ry="4" fill="#3d2314"/><path d="M45 25Q55 25 55 35Q55 42 45 42" stroke="#6b4423" stroke-width="3" fill="none"/>'},
+    {id:'wine', name:'喵酒', msg:'喵快乐时想微醺，喵不快乐时...你不懂的~', svg:'<path d="M25 15L22 35Q20 45 30 45Q40 45 38 35L35 15Z" fill="#8b0000"/><ellipse cx="30" cy="15" rx="8" ry="3" fill="#a52a2a"/><rect x="27" y="45" width="6" height="8" fill="#8b4513"/>'}
+];
+
+// 正能量鼓励文案（30+条）
+const POSITIVE_QUOTES = [
+    "主人加油！你是最棒的喵~",
+    "不管今天多累，回家有我等你喵~",
+    "你的笑容比小鱼干还甜喵~",
+    "主人做什么都很厉害的喵！",
+    "今天也要开开心心的哦喵~",
+    "有你在的日子，每天都像过节喵~",
+    "主人别担心，一切都会好起来的喵~",
+    "你比你自己想象的更强大喵~",
+    "累了就抱抱我吧，充电完毕喵~",
+    "主人是世界上最好的人喵~",
+    "就算全世界都不信你，我也信你喵~",
+    "每天进步一点点，就是最好的喵~",
+    "你的努力我都看在眼里了喵~",
+    "主人笑起来真好看喵~",
+    "有梦想就勇敢去追吧喵~",
+    "不管发生什么，我永远陪着你喵~",
+    "主人今天也辛苦了，早点休息喵~",
+    "你值得世界上所有美好的东西喵~",
+    "失败不可怕，可怕的是不敢尝试喵~",
+    "主人你就是我的超级英雄喵~",
+    "生活因为有你才变得温暖喵~",
+    "被你选中是我最大的幸运喵~",
+    "你的陪伴就是我最好的礼物喵~",
+    "主人，你已经做得很好了喵~",
+    "别对自己太严格了喵~",
+    "有你的地方就是我的家喵~",
+    "谢谢你一直照顾我喵~",
+    "主人，你值得被爱喵~",
+    "每一天都是新的开始喵~",
+    "我会一直守护你的喵~",
+    "爱你哟，主人喵~"
+];
+
+const SICK_QUOTES = ["喵呜...我不舒服...头好晕喵...","主人，我好像生病了...咳咳喵...","身体好难受喵...快给我喂药吧...","喵...我想我需要看医生喵..."];
+const OLD_QUOTES = ["喵...老了，走不动了喵...","主人，谢谢你陪我这么久喵...","虽然老了，但我还是最爱你的喵~","喵...让我再睡一会儿..."];
+const HUNGER_QUOTES = ["我饿了喵~给我小鱼干好不好~","肚子咕咕叫了喵~","好想吃小虾干喵~","主人，饭饭时间到了喵~"];
+const ANGRY_QUOTES = ["哼！人家睡得好好的...生气气！","喵！你吵醒我了！快摸摸我道歉！","讨厌喵~快哄哄我~"];
+
+// ========== 游戏状态 ==========
+function newCat(breed, name, gender) {
+    const now = Date.now();
+    const today = new Date().toDateString();
+    return {breed, name, gender, age:0, hunger:80, happiness:70, cleanliness:90,
+        poopCount:0, peeCount:0, lastFed:now, lastMealTime:now, missedMeals:0,
+        isSick:false, isSleeping:false, isDead:false, deathReason:'',
+        birthDate:today, lastAgeUpdate:today};
+}
+
+let G = {
+    cats: [],
+    babyCat: null,
+    isMarried: false,
+    selIdx: 0,
+    chatHistories: {}, // 每只猫独立的聊天记录 {catIndex: [{role, content}]}
+    addingCat: false,
+    pendingBreed: null,
+    pendingGender: null
+};
+
+// 获取当前选中猫的聊天记录
+function getChatHistory() {
+    if (!G.chatHistories) {
+        G.chatHistories = {};
+    }
+    const key = G.selIdx.toString();
+    if (!G.chatHistories[key]) {
+        G.chatHistories[key] = [];
+    }
+    return G.chatHistories[key];
+}
+
+// 保存当前选中猫的聊天记录
+function setChatHistory(history) {
+    G.chatHistories[G.selIdx.toString()] = history;
+}
+
+// ========== SVG生成 ==========
+function catSVG(breed, age, sleeping=false, small=false) {
+    const b = BREEDS[breed] || BREEDS['american-shorthair'];
+    const sc = small ? 0.4 : Math.min(1, 0.5 + age * 0.025);
+    const sz = small ? 70 : 160 * sc;
+    const ox = (180 - sz) / 2, oy = (180 - sz) / 2;
+    const op = age >= 15 ? 0.85 : 1;
+    const eye = sleeping
+        ? `<path d="M${ox+sz*.25} ${oy+sz*.5}Q${ox+sz*.32} ${oy+sz*.47} ${ox+sz*.39} ${oy+sz*.5}" stroke="#333" stroke-width="2.5" fill="none"/>
+           <path d="M${ox+sz*.61} ${oy+sz*.5}Q${ox+sz*.68} ${oy+sz*.47} ${ox+sz*.75} ${oy+sz*.5}" stroke="#333" stroke-width="2.5" fill="none"/>`
+        : `<circle cx="${ox+sz*.32}" cy="${oy+sz*.5}" r="${sz*.07}" fill="${b.eye}"/><circle cx="${ox+sz*.68}" cy="${oy+sz*.5}" r="${sz*.07}" fill="${b.eye}"/>
+           <circle cx="${ox+sz*.34}" cy="${oy+sz*.5}" r="${sz*.035}" fill="#333"/><circle cx="${ox+sz*.70}" cy="${oy+sz*.5}" r="${sz*.035}" fill="#333"/>`;
+    let extra = '';
+    if (b.mask) extra += `<ellipse cx="${ox+sz*.5}" cy="${oy+sz*.38}" rx="${sz*.22}" ry="${sz*.16}" fill="${b.mask}" opacity="${op}"/>`;
+    if (b.stripe) extra += `<path d="M${ox+sz*.22} ${oy+sz*.35}L${ox+sz*.32} ${oy+sz*.38}L${ox+sz*.22} ${oy+sz*.41}" fill="${b.stripe}" opacity="${op}"/>
+        <path d="M${ox+sz*.78} ${oy+sz*.35}L${ox+sz*.68} ${oy+sz*.38}L${ox+sz*.78} ${oy+sz*.41}" fill="${b.stripe}" opacity="${op}"/>`;
+    if (b.folded) extra += `<ellipse cx="${ox+sz*.2}" cy="${oy+sz*.33}" rx="${sz*.1}" ry="${sz*.08}" fill="${b.body}" opacity="${op}"/>
+        <ellipse cx="${ox+sz*.8}" cy="${oy+sz*.33}" rx="${sz*.1}" ry="${sz*.08}" fill="${b.body}" opacity="${op}"/>`;
+    return `<svg viewBox="0 0 180 180" style="opacity:${op}">
+        <ellipse cx="${ox+sz*.5}" cy="${oy+sz*.55}" rx="${sz*.42}" ry="${sz*.36}" fill="${b.body}"/>
+        <polygon points="${ox+sz*.17},${oy+sz*.33} ${ox+sz*.05},${oy+sz*.05} ${ox+sz*.37},${oy+sz*.22}" fill="${b.body}"/>
+        <polygon points="${ox+sz*.83},${oy+sz*.33} ${ox+sz*.95},${oy+sz*.05} ${ox+sz*.63},${oy+sz*.22}" fill="${b.body}"/>
+        ${extra}${eye}
+        <ellipse cx="${ox+sz*.5}" cy="${oy+sz*.65}" rx="${sz*.11}" ry="${sz*.06}" fill="#ffb6c1"/>
+        <path d="M${ox+sz*.4} ${oy+sz*.7}Q${ox+sz*.5} ${oy+sz*.77} ${ox+sz*.6} ${oy+sz*.7}" stroke="#333" stroke-width="2" fill="none"/>
+        <ellipse cx="${ox+sz*.5}" cy="${oy+sz*.42}" rx="${sz*.04}" ry="${sz*.03}" fill="#333"/>
+    </svg>`;
+}
+
+// ========== 存储 ==========
+function save() { localStorage.setItem('aiCatV2', JSON.stringify(G)); }
+function load() {
+    const d = localStorage.getItem('aiCatV2');
+    if (d) {
+        try {
+            G = JSON.parse(d);
+            // 确保chatHistories存在
+            if (!G.chatHistories) {
+                G.chatHistories = {};
+            }
+            return true;
+        } catch(e){}
+    }
+    // 迁移旧版
+    const old = localStorage.getItem('aiCatGame');
+    if (old) {
+        try {
+            const o = JSON.parse(old);
+            if (o.selectedBreed && o.catName) {
+                G.cats = [newCat(o.selectedBreed, o.catName, o.gender || 'female')];
+                G.cats[0].age = o.age || 0;
+                G.cats[0].hunger = o.hunger || 80;
+                G.cats[0].happiness = o.happiness || 70;
+                G.cats[0].cleanliness = o.cleanliness || 90;
+                G.cats[0].isSick = o.isSick || false;
+                G.cats[0].isSleeping = o.isSleeping || false;
+                G.cats[0].isDead = o.isDead || false;
+                G.cats[0].lastFed = o.lastFed || Date.now();
+                G.cats[0].lastMealTime = o.lastMealTime || Date.now();
+                G.cats[0].birthDate = o.birthDate || new Date().toDateString();
+                G.cats[0].lastAgeUpdate = o.lastAgeUpdate || new Date().toDateString();
+                // 迁移旧版聊天记录到新格式
+                if (o.chatHistory && o.chatHistory.length > 0) {
+                    G.chatHistories['0'] = o.chatHistory;
+                }
+                save();
+                localStorage.removeItem('aiCatGame');
+                return true;
+            }
+        } catch(e){}
+    }
+    return false;
+}
+function clearSave() { localStorage.removeItem('aiCatV2'); }
+
+// ========== 界面管理 ==========
+function show(id) { document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on')); document.getElementById(id).classList.add('on'); }
+
+function notify(t) {
+    document.querySelectorAll('.notif').forEach(n=>n.remove());
+    const n = document.createElement('div'); n.className='notif'; n.textContent=t;
+    document.body.appendChild(n); setTimeout(()=>n.remove(), 3000);
+}
+
+function bubble(t) {
+    document.querySelectorAll('.bubble').forEach(b=>b.remove());
+    const b = document.createElement('div'); b.className='bubble'; b.textContent=t;
+    document.body.appendChild(b); setTimeout(()=>b.remove(), 3500);
+}
+
+function hearts(x, y) {
+    for (let i=0;i<3;i++) setTimeout(()=>{
+        const h=document.createElement('div'); h.className='heart-fx'; h.textContent='❤️';
+        h.style.left=(x+Math.random()*60-30)+'px'; h.style.top=(y+Math.random()*30)+'px';
+        document.body.appendChild(h); setTimeout(()=>h.remove(),1000);
+    }, i*150);
+}
+
+// ========== 初始化品种网格 ==========
+function initBreedGrid() {
+    const grid = document.getElementById('breedGrid');
+    grid.innerHTML = '';
+    for (const [id, b] of Object.entries(BREEDS)) {
+        const div = document.createElement('div');
+        div.className = 'bitem'; div.dataset.breed = id;
+        div.innerHTML = `<div class="bicon">${catSVG(id, 3, false, true)}</div><span class="bname">${b.name}</span>`;
+        div.onclick = () => {
+            document.querySelectorAll('.bitem').forEach(i=>i.classList.remove('sel'));
+            div.classList.add('sel');
+            G.pendingBreed = id;
+            document.getElementById('btnBreedOk').disabled = false;
+        };
+        grid.appendChild(div);
+    }
+}
+
+// ========== 初始化食物网格 ==========
+function initFoodGrid() {
+    const grid = document.getElementById('foodGrid');
+    grid.innerHTML = '';
+    FOODS.forEach(f => {
+        const div = document.createElement('div');
+        div.className = 'fitem';
+        div.innerHTML = `<svg viewBox="0 0 60 60">${f.svg}</svg><span>${f.name}</span>`;
+        div.onmouseenter = () => document.getElementById('fmsg').textContent = f.msg;
+        div.onclick = () => { doFeed(f); document.getElementById('mFeed').classList.remove('on'); };
+        grid.appendChild(div);
+    });
+}
+
+// ========== 品种选择流程 ==========
+document.getElementById('btnBreedOk').onclick = () => {
+    if (!G.pendingBreed) return;
+    document.getElementById('namePrev').innerHTML = catSVG(G.pendingBreed, 0);
+    show('sGender');
+    document.getElementById('goptM').classList.remove('sel-m');
+    document.getElementById('goptF').classList.remove('sel-f');
+    document.getElementById('btnGenderOk').disabled = true;
+    G.pendingGender = null;
+};
+
+document.getElementById('goptM').onclick = () => {
+    G.pendingGender = 'male';
+    document.getElementById('goptM').classList.add('sel-m');
+    document.getElementById('goptF').classList.remove('sel-f');
+    document.getElementById('btnGenderOk').disabled = false;
+};
+document.getElementById('goptF').onclick = () => {
+    G.pendingGender = 'female';
+    document.getElementById('goptF').classList.add('sel-f');
+    document.getElementById('goptM').classList.remove('sel-m');
+    document.getElementById('btnGenderOk').disabled = false;
+};
+
+document.getElementById('btnGenderBack').onclick = () => show('sBreed');
+
+document.getElementById('btnGenderOk').onclick = () => {
+    if (!G.pendingGender) return;
+    document.getElementById('namePrev').innerHTML = catSVG(G.pendingBreed, 0);
+    document.getElementById('nameInput').value = '';
+    show('sName');
+};
+
+document.getElementById('btnNameBack').onclick = () => show('sGender');
+
+document.getElementById('btnNameOk').onclick = () => {
+    const name = document.getElementById('nameInput').value.trim();
+    if (!name) { notify('请给猫咪取个名字哦~'); return; }
+    const cat = newCat(G.pendingBreed, name, G.pendingGender);
+    G.cats.push(cat);
+    G.selIdx = G.cats.length - 1;
+    G.addingCat = false;
+    save();
+    enterGame();
+};
+
+// ========== 进入游戏 ==========
+function enterGame() {
+    show('sGame');
+    renderGame();
+    startLoop();
+    // 欢迎语
+    const c = G.cats[G.selIdx];
+    if (c) bubble(`喵~ 我是${c.name}！请多多关照喵~`);
+}
+
+// ========== 渲染游戏界面 ==========
+function renderGame() {
+    renderCats();
+    renderBaby();
+    updateSelInfo();
+    updateBars();
+    updateMarryBtn();
+    updateAddBtn();
+    updateInfo();
+}
+
+function renderCats() {
+    const row = document.getElementById('catsRow');
+    row.innerHTML = '';
+    G.cats.forEach((cat, i) => {
+        if (cat.isDead) return;
+        const card = document.createElement('div');
+        card.className = 'ccard' + (i === G.selIdx ? ' sel' : '');
+        if (cat.isSleeping) card.classList.add('anim-sleep');
+        else card.classList.add('anim-bounce');
+        
+        let needsHTML = '';
+        if (cat.isSick) needsHTML += '<span class="badge badge-s">生病</span>';
+        if (cat.hunger < 40) needsHTML += '<span class="badge badge-h">饿了</span>';
+        if (cat.happiness < 40) needsHTML += '<span class="badge badge-h">求摸摸</span>';
+        if (cat.age >= 15) needsHTML += '<span class="badge badge-o">老年</span>';
+        
+        let wasteHTML = '';
+        for (let w=0;w<cat.poopCount;w++) wasteHTML += '<span>💩</span>';
+        for (let w=0;w<cat.peeCount;w++) wasteHTML += '<span>💧</span>';
+        
+        const gTag = cat.gender === 'male' ? '<span class="gender-tag gender-m" onclick="toggleGender('+i+',event)">♂</span>' : '<span class="gender-tag gender-f" onclick="toggleGender('+i+',event)">♀</span>';
+        
+        card.innerHTML = `
+            ${cat.isSick ? '<div class="sick-tag">生病了</div>' : ''}
+            ${cat.isSleeping ? '<div class="sleep-tag">呼呼大睡</div><div class="zzz">Z z z</div>' : ''}
+            <div class="ccard-head">
+                <span class="ccard-name">${cat.name} ${gTag}</span>
+                <span class="ccard-age">${cat.age}岁</span>
+            </div>
+            <div class="ccard-avatar">${catSVG(cat.breed, cat.age, cat.isSleeping)}</div>
+            <div class="ccard-needs">${needsHTML}</div>
+            <div class="waste">${wasteHTML}</div>
+        `;
+        card.onclick = (e) => { if(e.target.classList.contains('gender-tag')) return; G.selIdx = i; save(); renderGame(); };
+        row.appendChild(card);
+    });
+}
+
+function renderBaby() {
+    const row = document.getElementById('babyRow');
+    row.innerHTML = '';
+    if (!G.babyCat) return;
+    const b = G.babyCat;
+    const gTag = b.gender === 'male' ? '♂ 小王子' : '♀ 小公主';
+    row.innerHTML = `<div class="baby-card">
+        ${catSVG(b.breed, 0, false, true)}
+        <div class="baby-info"><div class="bname">${b.name}</div>${BREEDS[b.breed].name} | ${gTag}</div>
+    </div>`;
+}
+
+function updateSelInfo() {
+    const el = document.getElementById('selInfo');
+    if (G.cats.length === 0) { el.innerHTML = '--'; return; }
+    const c = G.cats[G.selIdx];
+    if (!c || c.isDead) { el.innerHTML = '--'; return; }
+    const gTag = c.gender === 'male' ? '<span class="gender-tag gender-m" onclick="toggleGender(G.selIdx,event)">♂</span>' : '<span class="gender-tag gender-f" onclick="toggleGender(G.selIdx,event)">♀</span>';
+    el.innerHTML = `<span>${c.name} ${gTag} ${c.age}岁</span><button class="rename-b" onclick="openRename()">改名</button>`;
+}
+
+function updateBars() {
+    const c = G.cats[G.selIdx];
+    if (!c) return;
+    document.getElementById('barH').style.width = c.hunger + '%';
+    document.getElementById('barHp').style.width = c.happiness + '%';
+    document.getElementById('barC').style.width = c.cleanliness + '%';
+}
+
+function updateMarryBtn() {
+    const btn = document.getElementById('btnMarry');
+    const living = G.cats.filter(c => !c.isDead);
+    if (living.length === 2 && !G.isMarried && living[0].age >= 1 && living[1].age >= 1) {
+        btn.style.display = '';
+    } else {
+        btn.style.display = 'none';
+    }
+}
+
+function updateAddBtn() {
+    const living = G.cats.filter(c => !c.isDead);
+    document.getElementById('btnAddCat').disabled = living.length >= 2;
+}
+
+function updateInfo() {
+    const el = document.getElementById('infoText');
+    const living = G.cats.filter(c => !c.isDead);
+    let txt = '每天0点猫咪长大一岁 | 正常喂养可活到20岁';
+    if (living.length === 2 && !G.isMarried) txt += ' | 两只猫都≥1岁可结婚';
+    if (G.isMarried) txt += ' | 已结婚';
+    el.textContent = txt;
+}
+
+// ========== 操作处理 ==========
+function getSel() { return G.cats[G.selIdx]; }
+
+// 喂食
+function doFeed(food) {
+    const c = getSel(); if (!c || c.isDead) return;
+    c.hunger = Math.min(100, c.hunger + 20);
+    c.happiness = Math.min(100, c.happiness + 10);
+    c.lastFed = Date.now();
+    c.lastMealTime = Date.now();
+    c.missedMeals = 0;
+    bubble(food.msg);
+    const rect = document.querySelectorAll('.ccard')[G.selIdx]?.getBoundingClientRect();
+    if (rect) hearts(rect.left + rect.width/2, rect.top + rect.height/2);
+    save(); renderGame();
+}
+
+// 喂药
+function doMed() {
+    const c = getSel(); if (!c || c.isDead) return;
+    if (c.isSick) {
+        c.isSick = false; c.happiness = Math.min(100, c.happiness + 15);
+        bubble('谢谢主人！我感觉好多了喵~');
+        const rect = document.querySelectorAll('.ccard')[G.selIdx]?.getBoundingClientRect();
+        if (rect) hearts(rect.left + rect.width/2, rect.top + rect.height/2);
+    } else { bubble('我很健康喵~不需要吃药~'); }
+    save(); renderGame();
+}
+
+// 摸摸
+function doPet() {
+    const c = getSel(); if (!c || c.isDead) return;
+    if (c.isSleeping) { notify('猫咪在睡觉呢~'); return; }
+    c.happiness = Math.min(100, c.happiness + 15);
+    bubble('好舒服喵~再多摸一摸~');
+    const card = document.querySelectorAll('.ccard')[G.selIdx];
+    if (card) { card.classList.remove('anim-bounce'); card.classList.add('anim-wiggle'); setTimeout(()=>{card.classList.remove('anim-wiggle');card.classList.add('anim-bounce');},1000); }
+    const rect = card?.getBoundingClientRect();
+    if (rect) hearts(rect.left + rect.width/2, rect.top + rect.height/2);
+    save(); renderGame();
+}
+
+// 梳毛
+function doComb() {
+    const c = getSel(); if (!c || c.isDead) return;
+    if (c.isSleeping) { notify('猫咪在睡觉呢~'); return; }
+    c.cleanliness = Math.min(100, c.cleanliness + 20);
+    c.happiness = Math.min(100, c.happiness + 5);
+    bubble('毛发变得好顺滑喵~');
+    save(); renderGame();
+}
+
+// 铲屎
+function doPoop() {
+    const c = getSel(); if (!c || c.isDead) return;
+    if (c.poopCount > 0) { c.poopCount = 0; c.cleanliness = Math.min(100, c.cleanliness + 15); bubble('谢谢你帮我铲屎喵~'); }
+    else bubble('现在还没有便便哦喵~');
+    save(); renderGame();
+}
+
+// 清理
+function doPee() {
+    const c = getSel(); if (!c || c.isDead) return;
+    if (c.peeCount > 0) { c.peeCount = 0; c.cleanliness = Math.min(100, c.cleanliness + 15); bubble('地面变干净了喵~'); }
+    else bubble('现在还没有嘘嘘哦喵~');
+    save(); renderGame();
+}
+
+// 吵醒
+function doWake() {
+    const c = getSel(); if (!c || c.isDead) return;
+    if (!c.isSleeping) {
+        bubble('主子还清醒着呢喵~');
+        return;
+    }
+    c.isSleeping = false;
+    c.happiness = Math.max(0, c.happiness - 20);
+    bubble(ANGRY_QUOTES[Math.floor(Math.random()*ANGRY_QUOTES.length)]);
+    save(); renderGame();
+}
+
+// 操作按钮路由
+document.getElementById('actionGrid').addEventListener('click', e => {
+    const btn = e.target.closest('.abtn');
+    if (!btn) return;
+    const act = btn.dataset.act;
+    if (act === 'feed') document.getElementById('mFeed').classList.add('on');
+    else if (act === 'med') doMed();
+    else if (act === 'pet') doPet();
+    else if (act === 'comb') doComb();
+    else if (act === 'poop') doPoop();
+    else if (act === 'pee') doPee();
+    else if (act === 'chat') openChat();
+    else if (act === 'wake') doWake();
+    else if (act === 'marry') openMarry();
+});
+
+// 点击猫咪卡片上的唤醒
+document.getElementById('catsRow').addEventListener('click', e => {
+    if (e.target.closest('.sleep-tag') || e.target.closest('.zzz')) doWake();
+});
+
+document.getElementById('btnFeedClose').onclick = () => document.getElementById('mFeed').classList.remove('on');
+
+// 再养一只
+document.getElementById('btnAddCat').onclick = () => {
+    const living = G.cats.filter(c => !c.isDead);
+    if (living.length >= 2) { notify('最多只能养两只猫喵~'); return; }
+    G.addingCat = true;
+    G.pendingBreed = null;
+    G.pendingGender = null;
+    document.querySelectorAll('.bitem').forEach(i=>i.classList.remove('sel'));
+    document.getElementById('btnBreedOk').disabled = true;
+    show('sBreed');
+};
+
+// ========== 改名 ==========
+function openRename() {
+    const c = getSel(); if (!c) return;
+    document.getElementById('renameInput').value = c.name;
+    document.getElementById('mRename').classList.add('on');
+}
+document.getElementById('btnRenameCancel').onclick = () => document.getElementById('mRename').classList.remove('on');
+document.getElementById('btnRenameOk').onclick = () => {
+    const name = document.getElementById('renameInput').value.trim();
+    if (!name) return;
+    const c = getSel(); if (!c) return;
+    c.name = name;
+    document.getElementById('mRename').classList.remove('on');
+    bubble(`我有新名字啦！我叫${name}喵~`);
+    save(); renderGame();
+};
+
+// ========== 性别切换 ==========
+function toggleGender(catIdx, event) {
+    event.stopPropagation();
+    const cat = G.cats[catIdx];
+    if (!cat || cat.isDead) return;
+    cat.gender = cat.gender === 'male' ? 'female' : 'male';
+    const gName = cat.gender === 'male' ? '小王子' : '小公主';
+    bubble(`我的性别变成${gName}啦喵~`);
+    save();
+    renderGame();
+}
+
+// ========== 结婚系统 ==========
+function openMarry() {
+    const living = G.cats.filter(c => !c.isDead);
+    if (living.length < 2 || G.isMarried) return;
+    
+    const c1 = living[0], c2 = living[1];
+    document.getElementById('marryCats').innerHTML = `
+        <div class="marry-cat">${catSVG(c1.breed, c1.age)}<div class="mcname">${c1.name} ${c1.gender==='male'?'♂':'♀'}</div></div>
+        <div class="marry-heart">❤️</div>
+        <div class="marry-cat">${catSVG(c2.breed, c2.age)}<div class="mcname">${c2.name} ${c2.gender==='male'?'♂':'♀'}</div></div>
+    `;
+    
+    const canBaby = c1.gender !== c2.gender;
+    document.getElementById('marryNote').textContent = canBaby
+        ? '它们是一公一母，结婚后可以生育小猫咪！'
+        : '它们是同性猫咪，可以结婚但不能生育小猫咪哦~';
+    
+    document.getElementById('mMarry').classList.add('on');
+}
+
+document.getElementById('btnMarryCancel').onclick = () => document.getElementById('mMarry').classList.remove('on');
+
+document.getElementById('btnMarryOk').onclick = () => {
+    const living = G.cats.filter(c => !c.isDead);
+    if (living.length < 2) return;
+    
+    G.isMarried = true;
+    document.getElementById('mMarry').classList.remove('on');
+    
+    const c1 = living[0], c2 = living[1];
+    bubble(`${c1.name}和${c2.name}结婚啦！幸福喵~`);
+    
+    // 如果可以生育，弹出小猫选项
+    if (c1.gender !== c2.gender) {
+        setTimeout(() => offerBaby(c1, c2), 1500);
+    }
+    
+    save(); renderGame();
+};
+
+function offerBaby(c1, c2) {
+    // 随机继承父母之一的品种
+    const parentBreed = Math.random() < 0.5 ? c1.breed : c2.breed;
+    const babyGender = Math.random() < 0.5 ? 'male' : 'female';
+    const babyNames = ['小团子','小棉花','小豆丁','小奶糕','小麻薯','小布丁','小年糕','小汤圆','小花卷','小窝窝'];
+    const babyName = babyNames[Math.floor(Math.random() * babyNames.length)];
+    
+    document.getElementById('babyPrev').innerHTML = catSVG(parentBreed, 0, false, true);
+    document.getElementById('babyInfo').innerHTML = `
+        品种：${BREEDS[parentBreed].name}<br>
+        性别：${babyGender === 'male' ? '♂ 公' : '♀ 母'}<br>
+        名字：${babyName}
+    `;
+    
+    // 存储小猫信息
+    G._pendingBaby = {breed: parentBreed, name: babyName, gender: babyGender};
+    
+    document.getElementById('mBaby').classList.add('on');
+}
+
+document.getElementById('btnKeepBaby').onclick = () => {
+    if (G._pendingBaby) {
+        G.babyCat = G._pendingBaby;
+        delete G._pendingBaby;
+    }
+    document.getElementById('mBaby').classList.remove('on');
+    bubble('小猫咪加入家庭啦！好幸福喵~');
+    save(); renderGame();
+};
+
+document.getElementById('btnGiveBaby').onclick = () => {
+    delete G._pendingBaby;
+    document.getElementById('mBaby').classList.remove('on');
+    bubble('小猫咪被送到了一个好人家喵~');
+    save(); renderGame();
+};
+
+// ========== 死亡系统 ==========
+function handleDeath(catIdx, reason) {
+    const c = G.cats[catIdx];
+    c.isDead = true;
+    c.deathReason = reason;
+    
+    document.getElementById('deathTitle').textContent = `${c.name}离开了`;
+    document.getElementById('deathMsg').textContent = reason === 'old'
+        ? `${c.name}已经${c.age}岁了，它安详地离开了...\n谢谢你这段时间的陪伴。`
+        : `${c.name}因为太久没有吃东西，离开了...\n下次记得按时喂食哦...`;
+    document.getElementById('dDeath').classList.add('on');
+    
+    // 如果已婚，解除婚姻
+    if (G.isMarried) {
+        G.isMarried = false;
+        G.babyCat = null;
+    }
+    save();
+}
+
+document.getElementById('btnDeathNew').onclick = () => {
+    const deadCat = G.cats.find(c => c.isDead);
+    G.cats = G.cats.filter(c => !c.isDead);
+    G.isMarried = false;
+    G.babyCat = null;
+    document.getElementById('dDeath').classList.remove('on');
+    G.pendingBreed = null;
+    G.pendingGender = null;
+    document.querySelectorAll('.bitem').forEach(i=>i.classList.remove('sel'));
+    document.getElementById('btnBreedOk').disabled = true;
+    show('sBreed');
+    save();
+};
+
+document.getElementById('btnDeathRebirth').onclick = () => {
+    const deadCat = G.cats.find(c => c.isDead);
+    if (deadCat) {
+        const breed = deadCat.breed, name = deadCat.name, gender = deadCat.gender;
+        G.cats = G.cats.filter(c => !c.isDead);
+        const newC = newCat(breed, name, gender);
+        G.cats.push(newC);
+        G.selIdx = G.cats.length - 1;
+        G.isMarried = false;
+        G.babyCat = null;
+    }
+    document.getElementById('dDeath').classList.remove('on');
+    bubble('喵~我又回来啦！这次我会更乖的喵~');
+    save(); renderGame();
+};
+
+// ========== 自定义确认弹窗 ==========
+let _confirmCallback = null;
+function showConfirm(title, msg, onYes) {
+    document.getElementById('confirmTitle').textContent = title;
+    document.getElementById('confirmMsg').textContent = msg;
+    _confirmCallback = onYes;
+    document.getElementById('mConfirm').classList.add('on');
+}
+document.getElementById('btnConfirmNo').onclick = () => { document.getElementById('mConfirm').classList.remove('on'); _confirmCallback = null; };
+document.getElementById('btnConfirmYes').onclick = () => { document.getElementById('mConfirm').classList.remove('on'); if (_confirmCallback) _confirmCallback(); _confirmCallback = null; };
+
+// ========== 聊天系统 ==========
+function openChat() {
+    const c = getSel();
+    if (!c) {
+        notify('请先选择一只猫咪喵~');
+        return;
+    }
+    document.getElementById('chatCatName').textContent = c.name;
+    loadChatMessages();
+    show('sChat');
+}
+
+// 加载当前猫的聊天记录到界面
+function loadChatMessages() {
+    const box = document.getElementById('chatMsgs');
+    if (!box) return;
+    box.innerHTML = '';
+    const history = getChatHistory();
+    if (history && history.length > 0) {
+        history.forEach(m => {
+            const d = document.createElement('div');
+            d.className = 'cmsg ' + (m.role === 'user' ? 'u' : 'c');
+            d.textContent = m.content;
+            box.appendChild(d);
+        });
+    } else {
+        box.innerHTML = '<div class="cmsg c">喵~ 有什么想和我说的话吗？</div>';
+    }
+    box.scrollTop = box.scrollHeight;
+}
+
+document.getElementById('btnChatBack').onclick = () => { show('sGame'); renderGame(); };
+
+// 保存聊天记录按钮
+document.getElementById('btnSaveChat').onclick = () => {
+    const history = getChatHistory();
+    if (history.length === 0) {
+        notify('还没有聊天记录哦喵~');
+        return;
+    }
+    const c = getSel();
+    const text = history.map(m => (m.role === 'user' ? '主人: ' : c.name + ': ') + m.content).join('\n');
+    const blob = new Blob([text], {type: 'text/plain;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `与${c.name}的聊天记录.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+    notify('聊天记录已保存喵~');
+};
+
+// 清空聊天记录按钮
+document.getElementById('btnClearChat').onclick = () => {
+    showConfirm('清空聊天', '确定要清空聊天记录吗喵？', () => {
+        G.chatHistories[G.selIdx.toString()] = [];
+        save();
+        loadChatMessages();
+        notify('聊天记录已清空喵~');
+    });
+};
+
+document.getElementById('btnSend').onclick = sendMsg;
+document.getElementById('chatInput').onkeypress = e => { if (e.key === 'Enter') sendMsg(); };
+
+function sendMsg() {
+    const inp = document.getElementById('chatInput');
+    const msg = inp.value.trim();
+    if (!msg) return;
+    addMsg(msg, 'u');
+    inp.value = '';
+    document.getElementById('typingInd').classList.add('on');
+    
+    getAIReply(msg).then(reply => {
+        document.getElementById('typingInd').classList.remove('on');
+        addMsg(reply, 'c');
+    }).catch(() => {
+        document.getElementById('typingInd').classList.remove('on');
+        addMsg('喵？网络好像有点问题喵~', 'c');
+    });
+}
+
+function addMsg(text, type) {
+    const box = document.getElementById('chatMsgs');
+    const d = document.createElement('div');
+    d.className = 'cmsg ' + (type === 'u' ? 'u' : 'c');
+    d.textContent = text;
+    box.appendChild(d);
+    box.scrollTop = box.scrollHeight;
+    const history = getChatHistory();
+    history.push({role: type === 'u' ? 'user' : 'cat', content: text});
+    if (history.length > 50) setChatHistory(history.slice(-50));
+    else setChatHistory(history);
+    save();
+}
+
+async function getAIReply(userMsg) {
+    // 随机返回正能量语录
+    return POSITIVE_QUOTES[Math.floor(Math.random() * POSITIVE_QUOTES.length)];
+}
+
+// ========== 游戏循环 ==========
+let loopStarted = false;
+function startLoop() {
+    if (loopStarted) return;
+    loopStarted = true;
+    
+    // 每秒更新
+    setInterval(() => {
+        let changed = false;
+        G.cats.forEach(c => {
+            if (c.isDead) return;
+            // 年龄检查
+            const today = new Date().toDateString();
+            if (c.lastAgeUpdate !== today) {
+                c.age++;
+                c.lastAgeUpdate = today;
+                if (c.age >= 20) { handleDeath(G.cats.indexOf(c), 'old'); return; }
+                else notify(`${c.name}今天${c.age}岁啦！`);
+                changed = true;
+            }
+            // 喂食检查
+            const hrsSinceFed = (Date.now() - c.lastFed) / 3600000;
+            if (hrsSinceFed >= 24) { handleDeath(G.cats.indexOf(c), 'starve'); return; }
+            const hrsSinceMeal = (Date.now() - c.lastMealTime) / 3600000;
+            if (hrsSinceMeal >= 8 && !c.isSick) {
+                c.missedMeals++;
+                c.lastMealTime = Date.now();
+                if (c.missedMeals >= 1) { c.isSick = true; bubble(`${c.name}生病了！快给它喂药喵~`); }
+                changed = true;
+            }
+            // 状态衰减
+            if (!c.isSleeping) {
+                if (c.hunger > 0) c.hunger = Math.max(0, c.hunger - 0.15);
+                if (c.happiness > 0) c.happiness = Math.max(0, c.happiness - 0.1);
+                if (c.cleanliness > 0) c.cleanliness = Math.max(0, c.cleanliness - 0.08);
+            }
+        });
+        if (changed) save();
+        renderGame();
+    }, 1000);
+    
+    // 随机排泄
+    setInterval(() => {
+        G.cats.forEach(c => {
+            if (c.isDead || c.isSleeping) return;
+            if (Math.random() < 0.08 && c.poopCount < 20) { c.poopCount++; save(); renderGame(); }
+            if (Math.random() < 0.08 && c.peeCount < 30) { c.peeCount++; save(); renderGame(); }
+        });
+    }, 20000);
+    
+    // 随机睡觉
+    setInterval(() => {
+        G.cats.forEach(c => {
+            if (c.isDead || c.isSleeping) return;
+            if (Math.random() < 0.08) { c.isSleeping = true; save(); renderGame(); }
+        });
+    }, 60000);
+    
+    // 随机说话
+    setInterval(() => {
+        const c = getSel();
+        if (!c || c.isDead || c.isSleeping) return;
+        if (Math.random() < 0.2) {
+            let q = POSITIVE_QUOTES;
+            if (c.isSick) q = SICK_QUOTES;
+            else if (c.age >= 15) q = OLD_QUOTES;
+            else if (c.hunger < 40) q = HUNGER_QUOTES;
+            bubble(q[Math.floor(Math.random()*q.length)]);
+        }
+    }, 45000);
+}
+
+// ========== 初始化 ==========
+function init() {
+    initBreedGrid();
+    initFoodGrid();
+    
+    if (load() && G.cats.some(c => !c.isDead)) {
+        // 确保selIdx有效
+        if (G.selIdx >= G.cats.length || G.cats[G.selIdx]?.isDead) {
+            G.selIdx = G.cats.findIndex(c => !c.isDead);
+            if (G.selIdx < 0) G.selIdx = 0;
+        }
+        enterGame();
+    } else if (G.cats.some(c => c.isDead)) {
+        // 有死亡的猫
+        const deadIdx = G.cats.findIndex(c => c.isDead);
+        if (deadIdx >= 0) handleDeath(deadIdx, G.cats[deadIdx].deathReason);
+        show('sGame');
+        renderGame();
+    }
+    // 否则显示品种选择
+}
+
+init();
+</script>
+</body>
+</html>
